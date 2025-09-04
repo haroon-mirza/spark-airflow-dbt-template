@@ -4,9 +4,9 @@
 services:
   # The main Spark service with JupyterLab for interactive notebooks.
   spark-iceberg:
+    # This line tells Docker to pull the pre-built image directly from Docker Hub.
     image: tabulario/spark-iceberg
     container_name: spark-iceberg
-    build: spark/
     networks:
       iceberg_net:
     depends_on:
@@ -92,3 +92,4 @@ services:
 # Defines the private network for all the services to communicate.
 networks:
   iceberg_net:
+
