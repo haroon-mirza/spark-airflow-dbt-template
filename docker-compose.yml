@@ -1,11 +1,6 @@
-# This docker-compose file defines the INTERACTIVE development environment.
-# It includes Spark, Minio (S3-compatible storage), and the Iceberg REST catalog.
-# Use 'docker compose up -d' from the project root to start these services.
 services:
-  # The main Spark service with JupyterLab for interactive notebooks.
   spark-iceberg:
-    # This line tells Docker to pull the pre-built image directly from Docker Hub.
-    image: tabulario/spark-iceberg
+    build: ./spark/
     container_name: spark-iceberg
     networks:
       iceberg_net:
@@ -13,25 +8,19 @@ services:
       - rest
       - minio
     volumes:
-      # The 'warehouse' is where your Iceberg data will be stored via Minio.
       - ./warehouse:/home/iceberg/warehouse
-      # The 'notebooks' folder is your workspace for JupyterLab.
       - ./notebooks:/home/iceberg/notebooks/notebooks
     environment:
-      # These credentials are for Spark to talk to the local Minio service.
       - AWS_ACCESS_KEY_ID=admin
       - AWS_SECRET_ACCESS_KEY=password
       - AWS_REGION=us-east-1
     ports:
-      # Port for JupyterLab UI
       - "8888:8888"
-      # Ports for Spark UI and services
       - "8080:8080"
       - "8082:8082"
       - "10000:10000"
       - "10001:10001"
 
-  # The Iceberg REST Catalog service. It manages table metadata.
   rest:
     image: apache/iceberg-rest-fixture
     container_name: iceberg-rest
@@ -45,10 +34,8 @@ services:
       - AWS_REGION=us-east-1
       - CATALOG_WAREHOUSE=s3://warehouse/
       - CATALOG_IO__IMPL=org.apache.iceberg.aws.s3.S3FileIO
-      # This critical line tells the catalog to use our local Minio, not the real AWS S3.
       - CATALOG_S3_ENDPOINT=http://minio:9000
 
-  # The local S3-compatible object storage service.
   minio:
     image: minio/minio
     container_name: minio
@@ -61,14 +48,10 @@ services:
         aliases:
           - warehouse.minio
     ports:
-      # Port for Minio API
       - "9000:9000"
-      # Port for Minio Console UI
       - "9001:9001"
     command: ["server", "/data", "--console-address", ":9001"]
 
-  # A one-time setup service using the Minio Client (mc).
-  # It creates the 'warehouse' bucket for our data.
   mc:
     depends_on:
       - minio
@@ -89,7 +72,6 @@ services:
       tail -f /dev/null
       "
 
-# Defines the private network for all the services to communicate.
 networks:
   iceberg_net:
 

@@ -1,0 +1,57 @@
+# This GitHub Actions workflow defines our Continuous Integration (CI) process.
+# It automatically runs on every push to the 'main' branch or any pull request.
+name: CI - Run Tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  # This job tests the Python code in the pipeline.
+  python-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repository code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        pip install pytest
+        # In a real project, you'd install from a requirements file for your pipeline code
+        # pip install -r economic_indicator_pipeline/requirements.txt
+
+    - name: Run Pytest
+      run: |
+        # This assumes your tests are in a 'tests' folder at the root.
+        # We will need to create this folder and add test files later.
+        echo "Pytest would run here."
+        # pytest tests/
+
+  # This job tests the SQL code in the dbt project.
+  dbt-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repository code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install dbt and adapter
+      run: pip install dbt-core dbt-spark
+
+    - name: Run dbt test
+      run: |
+        # This command checks the integrity of your dbt project and runs any defined tests.
+        echo "dbt test would run here."
+        # This requires a profiles.yml setup for the CI environment.
+        # dbt test --project-dir ./airflow/dbt_project
